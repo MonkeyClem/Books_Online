@@ -76,6 +76,7 @@ for link in link_array:
                 # # print("URL du lien :", prefix + splitted_url)
 
 # print(product_list)
+donnees_produits = []
 
 
 for product in product_list : 
@@ -91,21 +92,19 @@ for product in product_list :
     category = soup.find('ul', class_= 'breadcrumb').find_all('li')[2].text
     review_rating = soup.find("p", class_="star-rating")["class"][-1]
     image_url = soup.find('img')["src"]
-
     # print(title, price_excluding_tax, price_including_tax, number_available, category, review_rating)
-
-# Création d'un objet qui nous servira à transmettre les données au format CSV 
-donnees_produit = {
-    'Universal Product Code': universal_product_code,
-    'Title': title,
-    'Price (Excluding Tax)': price_excluding_tax,
-    'Price (Including Tax)': price_including_tax,
-    'Number Available': number_available,
-    'Product Description': product_description,
-    'Category': category,
-    'Review Rating': review_rating,
-    'Image URL': image_url
-}
+    # Création d'un objet qui nous servira à transmettre les données au format CSV 
+    donnees_produit = {
+        'Universal Product Code': universal_product_code,
+        'Title': title,
+        'Price (Excluding Tax)': price_excluding_tax,
+        'Price (Including Tax)': price_including_tax,
+        'Number Available': number_available,
+        'Product Description': product_description,
+        'Category': category,
+        'Review Rating': review_rating,
+        'Image URL': image_url
+    }
 
 # Nous ouvrons un fichier CSV (s'il n'existe pas, il sera crée) 
 with open('donnees_produit.csv', 'w', newline='', encoding='utf-8') as csvfile:
@@ -123,4 +122,4 @@ print("Données exportées avec succès dans le fichier CSV.")
    
  
 
-   
+
