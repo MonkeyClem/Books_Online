@@ -13,7 +13,8 @@ from bs4 import BeautifulSoup
 
 #import de pprint afin d'améliorer la lisibilité des print / faciliter le debug
 from pprint import pprint
-
+ 
+pprint("Hello ! The program is running. Please be patient, I'm going to do my best :)")
 
 # # # # # # # # # # # PHASE 1 
 
@@ -23,12 +24,6 @@ from pprint import pprint
 # response = requests.get(page_url)
 
 # soup = BeautifulSoup(response.content, 'html.parser')
-
-
-
-
-
-
 
 
 
@@ -188,9 +183,30 @@ for page in all_pages :
     soup = BeautifulSoup(response.content, 'html.parser')
     all_products_pods = soup.find_all('article', class_="product_pod")
     for pod in all_products_pods :
-            product_link = pod.find("a")["href"]
-            all_products.append(product_link)
-            # print(product_link)
-            # Possibilité de faire le scrapping directement ici 
+            product_link = pod.find("a")["href"]                            
+            texte_a_remplacer = '../../../' 
+            nouveau_texte = 'https://books.toscrape.com/catalogue/'
+            nouveau_lien = product_link.replace(texte_a_remplacer, nouveau_texte)
+
+            all_products.append(nouveau_lien)
+            
+            
+            # pprint(nouveau_lien) 
+            
+            #On fait le scrapping ici : 
+            
+     
+            response = requests.get(nouveau_lien)
+            soup = BeautifulSoup(response.content, 'html.parser') 
+            title = soup.find('h1').text
+            price_excluding_tax = soup.find('th', string="Price (excl. tax)").find_next('td').text
+            price_including_tax = soup.find('th', string="Price (incl. tax)").find_next('td').text
+            number_available = soup.find('th', string="Availability").find_next('td').text
+            product_description = soup.find('div', id='product_description').find_next('p').text
+            category = soup.find('ul', class_= 'breadcrumb').find_all('li')[2].text
+            review_rating = soup.find("p", class_="star-rating")["class"][-1]
+            image_url = soup.find('img')["src"]
+            print(title, price_excluding_tax, number_available, category, review_rating) 
+            
 
 pprint(len(all_products))
