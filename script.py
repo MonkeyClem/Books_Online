@@ -13,17 +13,28 @@ from bs4 import BeautifulSoup
 
 #import de pprint afin d'améliorer la lisibilité des print / faciliter le debug
 from pprint import pprint
- 
+
 import os
+
+# On obtient le chemin absolu du fichier actuel, afin de pouvoir y écrire les données scrappées 
+path = os.path.abspath(__file__)
+# Obtenez le chemin du fichier actuel
+
+# Obtenez le répertoire racine en utilisant os.path.dirname
+parent_directory = os.path.dirname(path)
+
+print(f"Répertoire racine : {parent_directory}")
 
 # Créez un dictionnaire pour les fichiers CSV
 fichiers_csv = {}
-pprint("Hello ! I'm actually analyzing the website. Please be patient, I'm doing my best :)")
+
+
+print(f"Chemin absolu du fichier actuel : {path}")
+pprint("Hi ! Please be patient, the programm is running")
+
 
 
 # # # # # # # # #  PHASE 3 # # # # # # # # #
-
-
 
 homepage = 'http://books.toscrape.com/'
 response = requests.get(homepage)
@@ -46,6 +57,7 @@ link_list.pop(0)
 
 all_pages = []
 
+pprint("Nous sommes actuellement en train de récupérer les URLs de chacune des pages...")
 
 for link in link_list:
     all_pages.append(link)
@@ -63,15 +75,15 @@ for link in link_list:
         continue
 
 all_pages = sorted(all_pages)
-print(len(all_pages))
-pprint(all_pages)
 
+pprint("Toutes les URLs des pages produits ont été récupérés.")
+pprint("Nous récupérons actuellement les URLs de chacun des produits")
 
 all_products = []
 for page in all_pages :
     response = requests.get(page)
     soup = BeautifulSoup(response.content, 'html.parser')
-    pprint("Récupération des liens produits de la page " + page)
+    # pprint("Récupération des liens produits de la page " + page)
     all_products_pods = soup.find_all('article', class_="product_pod")
     for pod in all_products_pods :
             product_link = pod.find("a")["href"]                            
@@ -80,6 +92,8 @@ for page in all_pages :
             nouveau_lien = product_link.replace(texte_a_remplacer, nouveau_texte)
 
             all_products.append(nouveau_lien)
+            
+pprint('Tous les URLs produits ont été récupérés')
             
             
          
@@ -97,11 +111,21 @@ for product in all_products :
     product_description = product_description_element.find_next('p').text if product_description_element else ''
     category = soup.find('ul', class_= 'breadcrumb').find_all('li')[2].text
     review_rating = soup.find("p", class_="star-rating")["class"][-1]
+    image_url = soup.find('img')["src"]
+    # Votre constante prefix
+    prefix = 'https://books.toscrape.com/'
+    # Le chemin relatif à partir duquel vous souhaitez construire le chemin complet
+    relative_path = image_url
+    # Construction du chemin complet
+    image_url = os.path.join(prefix, relative_path)
+
+    print(f"Chemin complet : {image_url}")
+    print(image_url)
     cleaned_category = category.strip().replace("\n", "").lower().replace(" ", "_")
-    pprint("Actually scrapping this product information : ", title, "Category : ", cleaned_category )
+    print("Actually scrapping this product information : ", title, "Category : ", cleaned_category )
     nom_fichier_csv = cleaned_category + ".csv"
     # if cleaned_category not in fichiers_csv:
-    with open('C:/Projets_Open_Classrooms_PYTHON/BooksOnline_Jeulin_Clement/fichiers_csv/'+nom_fichier_csv, 'a', newline='', encoding='utf-8') as csvfile:
+    with open(parent_directory + '/fichiers_csv/' + nom_fichier_csv, 'a', newline='', encoding='utf-8') as csvfile:
                     # On crée un fichier CSV pour cette catégorie
                     fieldnames = ['Product Page URL', 'Title', 'Price excluding tax', 'Price including tax', 'Number available', 'Product description', 'Category', 'Review rating']
                     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -119,5 +143,14 @@ for product in all_products :
                     'Category': category,
                     'Review rating': review_rating
                     }),
+    response = requests.get(image_url)
+    #  contenu binaire de l'image
+    image_content = response.content
+    image_filename = image_url.split("/")[-1]
+    with open(parent_directory + '/images_folder/' + image_filename , 'wb') as image_file:
+        image_file.write(image_content)
+
+    print(f"L'image a été enregistrée sous le nom : {image_filename}")
+    
 
 pprint(len(all_products))
