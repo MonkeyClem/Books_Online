@@ -18,14 +18,13 @@ import os
 
 # On obtient le chemin absolu du fichier actuel, afin de pouvoir y écrire les données scrappées 
 path = os.path.abspath(__file__)
-# Obtenez le chemin du fichier actuel
 
-# Obtenez le répertoire racine en utilisant os.path.dirname
+# On obtient le répertoire racine en utilisant os.path.dirname
 parent_directory = os.path.dirname(path)
 
 print(f"Répertoire racine : {parent_directory}")
 
-# Créez un dictionnaire pour les fichiers CSV
+# On crée un dictionnaire pour les fichiers CSV
 fichiers_csv = {}
 
 
@@ -83,7 +82,6 @@ all_products = []
 for page in all_pages :
     response = requests.get(page)
     soup = BeautifulSoup(response.content, 'html.parser')
-    # pprint("Récupération des liens produits de la page " + page)
     all_products_pods = soup.find_all('article', class_="product_pod")
     for pod in all_products_pods :
             product_link = pod.find("a")["href"]                            
@@ -102,7 +100,6 @@ for product in all_products :
     soup = BeautifulSoup(response.content, 'html.parser') 
     universal_product_code = soup.find('td').text
     title = soup.find('h1').text
-    # print(title)
     price_excluding_tax = soup.find('th', string="Price (excl. tax)").find_next('td').text
     price_including_tax = soup.find('th', string="Price (incl. tax)").find_next('td').text
     number_available = soup.find('th', string="Availability").find_next('td').text
@@ -112,9 +109,7 @@ for product in all_products :
     category = soup.find('ul', class_= 'breadcrumb').find_all('li')[2].text
     review_rating = soup.find("p", class_="star-rating")["class"][-1]
     image_url = soup.find('img')["src"]
-    # Votre constante prefix
     prefix = 'https://books.toscrape.com/'
-    # Le chemin relatif à partir duquel vous souhaitez construire le chemin complet
     relative_path = image_url
     # Construction du chemin complet
     image_url = os.path.join(prefix, relative_path)
@@ -124,12 +119,9 @@ for product in all_products :
     cleaned_category = category.strip().replace("\n", "").lower().replace(" ", "_")
     print("Actually scrapping this product information : ", title, "Category : ", cleaned_category )
     nom_fichier_csv = cleaned_category + ".csv"
-    # if cleaned_category not in fichiers_csv:
     with open(parent_directory + '/fichiers_csv/' + nom_fichier_csv, 'a', newline='', encoding='utf-8') as csvfile:
-                    # On crée un fichier CSV pour cette catégorie
                     fieldnames = ['Product Page URL', 'Title', 'Price excluding tax', 'Price including tax', 'Number available', 'Product description', 'Category', 'Review rating']
                     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                    # Écrivez les en-têtes seulement si le fichier vient d'être créé
                     if csvfile.tell() == 0:
                         writer.writeheader()
                     fichiers_csv[cleaned_category] = writer
