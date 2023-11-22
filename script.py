@@ -28,13 +28,13 @@ print(f"Répertoire racine : {parent_directory}")
 fichiers_csv = {}
 
 
+#On obtient le répertoire racine en utilisant os. Cela nous servira à utiliser le chemin absolu vers le répertoire dans lequelle se trouve le programme.
 print(f"Chemin absolu du fichier actuel : {path}")
 pprint("Hi ! Please be patient, the programm is running")
 
-
-
 # # # # # # # # #  PHASE 3 # # # # # # # # #
 
+#Possibilité de réunir homepage et prefix dans la meme variable
 homepage = 'http://books.toscrape.com/'
 response = requests.get(homepage)
 soup = BeautifulSoup(response.content, 'html.parser')
