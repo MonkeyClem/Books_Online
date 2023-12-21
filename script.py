@@ -1,5 +1,4 @@
-# Nous importons le module csv, présent dans la bibliothèque standard de Python et 
-# qui fournit des fonctionnalités pour lire et écrire des fichiers CSV.
+# Nous importons le module csv, présent dans la bibliothèque standard de Python, qui fournit des fonctionnalités pour lire et écrire des fichiers CSV.
 # Il sera utilisé pour écrire les données extraites dans un fichier CSV.
 import csv
 
@@ -10,50 +9,45 @@ import requests
 # le parsing (analyse) de documents HTML ou XML. Ici, elle est utilisée pour extraire des informations spécifiques de la page web.
 from bs4 import BeautifulSoup
 
-
-#import de pprint afin d'améliorer la lisibilité des print / faciliter le debug
-from pprint import pprint
-
-import os
-
+# Import de pprint afin d'améliorer la lisibilité des print (ce qui facilite le debug)
 # On obtient le chemin absolu du fichier actuel, afin de pouvoir y écrire les données scrappées 
+from pprint import pprint
+import os
 path = os.path.abspath(__file__)
 
 # On obtient le répertoire racine en utilisant os.path.dirname
-parent_directory = os.path.dirname(path)
 
+parent_directory = os.path.dirname(path)
 print(f"Répertoire racine : {parent_directory}")
 
-# On crée un dictionnaire pour les fichiers CSV
+# On crée un dictionnaire qu'on utilisera afin d'y stocker les fichiers CSV
 fichiers_csv = {}
 
-
-#On obtient le répertoire racine en utilisant os. Cela nous servira à utiliser le chemin absolu vers le répertoire dans lequelle se trouve le programme.
+#On obtient le répertoire racine en utilisant os. Cela nous servira à utiliser le chemin absolu
+#vers le répertoire dans lequelle se trouve le programme.
 print(f"Chemin absolu du fichier actuel : {path}")
 pprint("Hi ! Please be patient, the programm is running")
 
-# # # # # # # # #  PHASE 3 # # # # # # # # #
+# Nous commençons tout d'abord par effectuer une requête http pour récupérer le contenu de l'URL présent dans homepage
+# Nous utilisons ensuite beautifulSoup afin de récupérer le contenu HTML de l'URL en question
 
-#Possibilité de réunir homepage et prefix dans la meme variable
-homepage = 'http://books.toscrape.com/'
+
+homepage = 'https://books.toscrape.com/'
 response = requests.get(homepage)
 soup = BeautifulSoup(response.content, 'html.parser')
-prefix = 'https://books.toscrape.com/'
 
-
+# Une fois le contenu HTML récupéré, on récupère la div dans laquelle setrouve les liens vers chacune des catégories, et on extrait ces derniers
 container = soup.find('div', class_='side_categories')
 links = container.find_all('a')
-
 
 
 link_list = []
 for link in links:
     link = link['href']
-    link = prefix + link
+    link = homepage + link
     link_list.append(link)  
-
+    
 link_list.pop(0)
-
 all_pages = []
 
 pprint("Nous sommes actuellement en train de récupérer les URLs de chacune des pages...")
@@ -63,20 +57,24 @@ for link in link_list:
     response = requests.get(link)
     soup = BeautifulSoup(response.content, 'html.parser')
     next_page = soup.find("li", class_='next')
-    #  If we find another page, then we need to get the URL of it. We do this until there is no more next page
+    #  Si "next_page" n'est pas null, alors cela signifie qu'on a besoin de récupérer l'url de la page 
+    #  suivante. On répète l'opération jusqu'à ce que next page nous retourne null 
     if next_page : 
+        # Utilisation de la méthode rsplit pour 'split' la chaine de caractère à partir de la droite 
         splitted_link = link.rsplit('/', 1)
         new_link = next_page.find("a")["href"]
         link_to_add = splitted_link[0] + "/" + new_link
         link_list.append(link_to_add)
-
     else : 
         continue
-
+ 
+# On procède au tri par ordre alphabétique pour une meilleure lisibilité du dossier final 
 all_pages = sorted(all_pages)
 
 pprint("Toutes les URLs des pages produits ont été récupérés.")
 pprint("Nous récupérons actuellement les URLs de chacun des produits")
+
+
 
 all_products = []
 for page in all_pages :
@@ -103,17 +101,18 @@ for product in all_products :
     price_excluding_tax = soup.find('th', string="Price (excl. tax)").find_next('td').text
     price_including_tax = soup.find('th', string="Price (incl. tax)").find_next('td').text
     number_available = soup.find('th', string="Availability").find_next('td').text
-     # Extraire la description du produit (si elle existe)
+    
+    # Extraire la description du produit (si elle existe)
     product_description_element = soup.find('div', id='product_description')
     product_description = product_description_element.find_next('p').text if product_description_element else ''
     category = soup.find('ul', class_= 'breadcrumb').find_all('li')[2].text
     review_rating = soup.find("p", class_="star-rating")["class"][-1]
     image_url = soup.find('img')["src"]
-    prefix = 'https://books.toscrape.com/'
+    homepage = 'https://books.toscrape.com/'
     relative_path = image_url
+    
     # Construction du chemin complet
-    image_url = os.path.join(prefix, relative_path)
-
+    image_url = os.path.join(homepage, relative_path)
     print(f"Chemin complet : {image_url}")
     print(image_url)
     cleaned_category = category.strip().replace("\n", "").lower().replace(" ", "_")
@@ -136,7 +135,8 @@ for product in all_products :
                     'Review rating': review_rating
                     }),
     response = requests.get(image_url)
-    #  contenu binaire de l'image
+    
+    # contenu de l'image
     image_content = response.content
     image_filename = image_url.split("/")[-1]
     with open(parent_directory + '/images_folder/' + image_filename , 'wb') as image_file:
@@ -145,4 +145,3 @@ for product in all_products :
     print(f"L'image a été enregistrée sous le nom : {image_filename}")
     
 
-pprint(len(all_products))
