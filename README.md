@@ -1,7 +1,7 @@
 Ce script Python permet de récupérer des informations sur les produits du site web "https://books.toscrape.com/" en utilisant les bibliothèques BeautifulSoup et requests.
 
 ETAPE 1 : Configuration de l'Environnement
-Clonez le répertoire du projet depuis GitHub, en utilisant cette commande dans votre terminal : git clone https://github.com/votre-utilisateur/nom-du-projet.git
+Clonez le répertoire du projet depuis GitHub, en utilisant cette commande dans votre terminal : git clone https://github.com/MonkeyClem/Books_Online.git
 Une fois cela effectué, rendez vous dans le fichier à l'aide de la commande : cd Books_Online
 
 
