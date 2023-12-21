@@ -1,66 +1,43 @@
-# Nous importons le module csv, présent dans la bibliothèque standard de Python, qui fournit des fonctionnalités pour lire et écrire des fichiers CSV.
-# Il sera utilisé pour écrire les données extraites dans un fichier CSV.
 import csv
-
-# Nous importons requests, qui est une bibliothèque cliente HTTP, spécialement conçue pour le langage de programmation Python. 
 import requests
-
-# Nous importons la classe BeautifulSoup du module bs4. BeautifulSoup est une bibliothèque qui est utiisée pour 
-# le parsing (analyse) de documents HTML ou XML. Ici, elle est utilisée pour extraire des informations spécifiques de la page web.
 from bs4 import BeautifulSoup
-
-# Import de pprint afin d'améliorer la lisibilité des print (ce qui facilite le debug)
-# On obtient le chemin absolu du fichier actuel, afin de pouvoir y écrire les données scrappées 
 from pprint import pprint
 import os
+
 path = os.path.abspath(__file__)
-
-# On obtient le répertoire racine en utilisant os.path.dirname
-
 parent_directory = os.path.dirname(path)
 print(f"Répertoire racine : {parent_directory}")
 
-# On crée un dictionnaire qu'on utilisera afin d'y stocker les fichiers CSV
 fichiers_csv = {}
 
-#On obtient le répertoire racine en utilisant os. Cela nous servira à utiliser le chemin absolu
-#vers le répertoire dans lequelle se trouve le programme.
 print(f"Chemin absolu du fichier actuel : {path}")
-pprint("Hi ! Please be patient, the programm is running")
 
-# Nous commençons tout d'abord par effectuer une requête http pour récupérer le contenu de l'URL présent dans homepage
-# Nous utilisons ensuite beautifulSoup afin de récupérer le contenu HTML de l'URL en question
+pprint("Hi ! Please be patient, the programm is running")
 
 
 homepage = 'https://books.toscrape.com/'
 response = requests.get(homepage)
 soup = BeautifulSoup(response.content, 'html.parser')
+link_list = []
 
-# Une fois le contenu HTML récupéré, on récupère la div dans laquelle setrouve les liens vers chacune des catégories, et on extrait ces derniers
 container = soup.find('div', class_='side_categories')
 links = container.find_all('a')
-
-
-link_list = []
 for link in links:
     link = link['href']
     link = homepage + link
     link_list.append(link)  
     
 link_list.pop(0)
-all_pages = []
 
 pprint("Nous sommes actuellement en train de récupérer les URLs de chacune des pages...")
 
+all_pages = []
 for link in link_list:
     all_pages.append(link)
     response = requests.get(link)
     soup = BeautifulSoup(response.content, 'html.parser')
     next_page = soup.find("li", class_='next')
-    #  Si "next_page" n'est pas null, alors cela signifie qu'on a besoin de récupérer l'url de la page 
-    #  suivante. On répète l'opération jusqu'à ce que next page nous retourne null 
     if next_page : 
-        # Utilisation de la méthode rsplit pour 'split' la chaine de caractère à partir de la droite 
         splitted_link = link.rsplit('/', 1)
         new_link = next_page.find("a")["href"]
         link_to_add = splitted_link[0] + "/" + new_link
@@ -68,7 +45,6 @@ for link in link_list:
     else : 
         continue
  
-# On procède au tri par ordre alphabétique pour une meilleure lisibilité du dossier final 
 all_pages = sorted(all_pages)
 
 pprint("Toutes les URLs des pages produits ont été récupérés.")
@@ -86,7 +62,6 @@ for page in all_pages :
             texte_a_remplacer = '../../../' 
             nouveau_texte = 'https://books.toscrape.com/catalogue/'
             nouveau_lien = product_link.replace(texte_a_remplacer, nouveau_texte)
-
             all_products.append(nouveau_lien)
             
 pprint('Tous les URLs produits ont été récupérés')
